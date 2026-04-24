@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IQ Interview Assessment</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- ============================================================
+       ✅  SITE CONFIG — Edit this section to customize your test
+       ============================================================ -->
+  <script>
+    const CONFIG = {
+
+      // ---------- Branding ----------
+      siteName:    "IQ Interview Assessment",
+      siteTagline: "Measure your cognitive ability across 5 key domains",
+      logoEmoji:   "🧠",
+
+      // ---------- Test Settings ----------
+      timePerQuestion:  30,    // seconds per question (0 = no timer)
+      showExplanations: true,  // show answer explanation after each question
+
+      // ---------- IQ Score Thresholds ----------
+      iqBands: [
+        { minPct: 0.95, iq: 145, label: "Genius Level",    emoji: "🏆", color: "#7c3aed" },
+        { minPct: 0.85, iq: 135, label: "Very Gifted",     emoji: "⭐", color: "#2563eb" },
+        { minPct: 0.75, iq: 125, label: "Above Average",   emoji: "🎯", color: "#0891b2" },
+        { minPct: 0.65, iq: 115, label: "High Average",    emoji: "✅", color: "#16a34a" },
+        { minPct: 0.55, iq: 108, label: "Average",         emoji: "📊", color: "#ca8a04" },
+        { minPct: 0.45, iq: 100, label: "Average",         emoji: "📊", color: "#ca8a04" },
+        { minPct: 0.35, iq:  92, label: "Low Average",     emoji: "📈", color: "#ea580c" },
+        { minPct: 0.25, iq:  85, label: "Below Average",   emoji: "📚", color: "#dc2626" },
+        { minPct: 0.00, iq:  75, label: "Below Average",   emoji: "📚", color: "#dc2626" },
+      ],
+
+      // ---------- Questions ----------
+      // Each question object:
+      //   id       : unique number (required)
+      //   cat      : category string — must match one key in CATEGORIES below
+      //   text     : question text (required)
+      //   visual   : optional monospace text displayed above the question
+      //   opts     : array of 4 answer strings (required)
+      //   ans      : index of correct answer — 0=A, 1=B, 2=C, 3=D (required)
+      //   exp      : explanation shown after answering
+      //
+      // ↓↓↓ ADD, REMOVE OR EDIT QUESTIONS BELOW ↓↓↓
+      questions: [
+        {
+          id: 1, cat: "Logic",
+          text: "All roses are flowers. Some flowers fade quickly. Which conclusion is valid?",
+          opts: ["All roses fade quickly", "Some roses may fade quickly", "No roses fade quickly", "Roses never fade"],
+          ans: 1,
+          exp: "We know roses are flowers, and some flowers fade quickly — so some roses might fade quickly. We cannot say all do."
+        },
+        {
+          id: 2, cat: "Math",
+          text: "What is the next number in the series: 2, 6, 18, 54, ___?",
+          opts: ["108", "162", "216", "72"],
+          ans: 1,
+          exp: "Each term is multiplied by 3. So 54 × 3 = 162."
+        },
+        {
+          id: 3, cat: "Verbal",
+          text: "BOOK is to LIBRARY as PAINTING is to:",
+          opts: ["Canvas", "Museum", "Artist", "Brush"],
+          ans: 1,
+          exp: "A book is stored/displayed in a library. A painting is stored/displayed in a museum."
+        },
+        {
+          id: 4, cat: "Spatial",
+          text: "Which symbol comes next in the pattern?",
+          visual: "▲  ■  ●  ▲  ■  ●  ▲  ■  ___",
+          opts: ["▲", "■", "●", "◆"],
+          ans: 2,
+          exp: "The pattern repeats every 3: triangle, square, circle. After square comes circle (●)."
+        },
+        {
+          id: 5, cat: "Math",
+          text: "If a train travels 120 km in 90 minutes, what is its speed in km/h?",
+          opts: ["80 km/h", "90 km/h", "100 km/h", "60 km/h"],
+          ans: 0,
+          exp: "Speed = Distance ÷ Time. 120 km ÷ 1.5 hours = 80 km/h."
+        },
+        {
+          id: 6, cat: "Logic",
+          text: "If all Bloops are Razzles, and all Razzles are Lazzles, then:",
+          opts: ["All Bloops are definitely Lazzles", "All Lazzles are Bloops", "Some Bloops are not Lazzles", "None of the above"],
+          ans: 0,
+          exp: "Transitive logic: Bloops → Razzles → Lazzles, therefore all Bloops are Lazzles."
+        },
+        {
+          id: 7, cat: "Memory",
+          text: "Study this sequence carefully: 7, 3, 9, 1, 5. What was the 3rd number?",
+          opts: ["3", "9", "1", "7"],
+          ans: 1,
+          exp: "The sequence was 7, 3, 9, 1, 5. The 3rd number is 9."
+        },
+        {
+          id: 8, cat: "Verbal",
+          text: "Which word is the odd one out?",
+          opts: ["Hammer", "Screwdriver", "Wrench", "Ladder"],
+          ans: 3,
+          exp: "Hammer, screwdriver, and wrench are hand tools. A ladder is climbing equipment, not a tool."
+        },
+        {
+          id: 9, cat: "Math",
+          text: "What is 15% of 280?",
+          opts: ["42", "38", "46", "52"],
+          ans: 0,
+          exp: "15% of 280 = 0.15 × 280 = 42."
+        },
+        {
+          id: 10, cat: "Spatial",
+          text: "A cube has 6 faces. If you unfold it flat, which shape best describes the result?",
+          opts: ["A hexagon", "A cross/plus shape", "A rectangle", "A triangle"],
+          ans: 1,
+          exp: "Unfolding a cube produces a cross (plus) shape — a row of 4 squares with one square on each side of the middle square."
+        },
+        {
+          id: 11, cat: "Logic",
+          text: "Mary is taller than Jane. Jane is taller than Sue. Who is the shortest?",
+          opts: ["Mary", "Jane", "Sue", "Cannot be determined"],
+          ans: 2,
+          exp: "Mary > Jane > Sue. Therefore Sue is the shortest."
+        },
+        {
+          id: 12, cat: "Math",
+          text: "If 5 workers can build a wall in 10 days, how long will 10 workers take (same rate)?",
+          opts: ["20 days", "5 days", "8 days", "4 days"],
+          ans: 1,
+          exp: "Total work = 5 × 10 = 50 worker-days. With 10 workers: 50 ÷ 10 = 5 days."
+        },
+        {
+          id: 13, cat: "Verbal",
+          text: "COLD is to HOT as DARK is to:",
+          opts: ["Night", "Shadow", "Light", "Dim"],
+          ans: 2,
+          exp: "Cold and hot are antonyms. The antonym of dark is light."
+        },
+        {
+          id: 14, cat: "Spatial",
+          text: "What number comes next: 1, 4, 9, 16, 25, ___?",
+          opts: ["30", "36", "49", "32"],
+          ans: 1,
+          exp: "These are perfect squares: 1², 2², 3², 4², 5², 6² = 36."
+        },
+        {
+          id: 15, cat: "Logic",
+          text: "A is the father of B. B is the sibling of C. C is the mother of D. What is A to D?",
+          opts: ["Uncle", "Grandfather", "Father", "Brother"],
+          ans: 1,
+          exp: "A is the father of B. B and C are siblings, so A is also C's father. C is D's mother, making A D's grandfather."
+        },
+        {
+          id: 16, cat: "Math",
+          text: "What is the missing number: 3, 8, 15, 24, ___, 48?",
+          opts: ["30", "33", "35", "32"],
+          ans: 2,
+          exp: "Differences increase by 2: 5, 7, 9, 11, 13. So 24 + 11 = 35. Check: 35 + 13 = 48 ✓"
+        },
+        {
+          id: 17, cat: "Verbal",
+          text: "SYMPHONY is to COMPOSER as SCULPTURE is to:",
+          opts: ["Museum", "Clay", "Sculptor", "Chisel"],
+          ans: 2,
+          exp: "A composer creates a symphony. A sculptor creates a sculpture."
+        },
+        {
+          id: 18, cat: "Memory",
+          text: "Which set of letters was originally shown: Q, T, M, B, R?",
+          opts: ["Q T M B R", "Q M T B R", "Q T B M R", "T Q M B R"],
+          ans: 0,
+          exp: "The original order was Q, T, M, B, R."
+        },
+        {
+          id: 19, cat: "Logic",
+          text: "In a race, you overtake the person in 2nd place. What position are you in now?",
+          opts: ["1st place", "2nd place", "3rd place", "Cannot determine"],
+          ans: 1,
+          exp: "You took the 2nd place person's spot — so you are now in 2nd. You did not pass the person in 1st."
+        },
+        {
+          id: 20, cat: "Math",
+          text: "A clock shows 3:15. What is the angle between the hour and minute hands?",
+          opts: ["0°", "7.5°", "15°", "22.5°"],
+          ans: 1,
+          exp: "At 3:00 the hour hand is at 90°. By 3:15 it moves 15 × 0.5° = 7.5° → now at 97.5°. Minute hand is at 90°. Difference = 7.5°."
+        }
+      ]
+      // ↑↑↑ END OF QUESTIONS ↑↑↑
+    };
+
+    // ---------- Categories & Colours ----------
+    const CATEGORIES = {
+      "Logic":   { color: "#2563eb", bg: "#eff6ff", text: "#1d4ed8" },
+      "Math":    { color: "#16a34a", bg: "#f0fdf4", text: "#15803d" },
+      "Verbal":  { color: "#7c3aed", bg: "#f5f3ff", text: "#6d28d9" },
+      "Spatial": { color: "#ca8a04", bg: "#fefce8", text: "#a16207" },
+      "Memory":  { color: "#db2777", bg: "#fdf2f8", text: "#be185d" },
+    };
+  </script>
+  <!-- ============================================================
+       END CONFIG
+       ============================================================ -->
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f8f7f4;
+      --surface: #ffffff;
+      --border: #e5e3de;
+      --text: #1a1917;
+      --muted: #6b6963;
+      --radius: 12px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 2rem 1rem 4rem;
+    }
+
+    h1, .display { font-family: 'DM Serif Display', serif; }
+
+    .container { max-width: 680px; margin: 0 auto; }
+
+    /* Header */
+    .site-header { text-align: center; padding: 2rem 0 2.5rem; }
+    .site-header .logo { font-size: 3rem; display: block; margin-bottom: 1rem; }
+    .site-header h1 { font-size: clamp(1.8rem, 5vw, 2.6rem); font-weight: 400; line-height: 1.2; margin-bottom: 0.5rem; }
+    .site-header p { color: var(--muted); font-size: 1rem; max-width: 420px; margin: 0 auto; line-height: 1.6; }
+
+    /* Cards */
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; box-shadow: var(--shadow); }
+
+    /* Stats grid */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin: 1.5rem 0; }
+    .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; text-align: center; }
+    .stat-card .num { font-family: 'DM Serif Display', serif; font-size: 1.75rem; line-height: 1; }
+    .stat-card .lbl { font-size: 0.75rem; color: var(--muted); margin-top: 4px; }
+
+    /* Badge */
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 99px; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.03em; }
+
+    /* Options */
+    .options { display: flex; flex-direction: column; gap: 8px; }
+    .option { display: flex; align-items: center; gap: 12px; padding: 13px 16px; border: 1px solid var(--border); border-radius: 10px; cursor: pointer; font-size: 0.95rem; color: var(--text); background: var(--surface); transition: border-color 0.15s, background 0.15s; text-align: left; width: 100%; font-family: 'DM Sans', sans-serif; }
+    .option:hover:not(:disabled) { border-color: #a8a29e; background: #faf9f7; }
+    .option:disabled { cursor: default; }
+    .option .letter { width: 28px; height: 28px; border-radius: 50%; background: #f1ede8; color: var(--muted); font-size: 0.8rem; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.15s, color 0.15s; }
+    .option.selected { border-color: #2563eb; background: #eff6ff; }
+    .option.selected .letter { background: #2563eb; color: white; }
+    .option.correct { border-color: #16a34a; background: #f0fdf4; }
+    .option.correct .letter { background: #16a34a; color: white; }
+    .option.wrong { border-color: #dc2626; background: #fef2f2; }
+    .option.wrong .letter { background: #dc2626; color: white; }
+
+    /* Timer */
+    .timer-bar { height: 4px; background: #e5e3de; border-radius: 2px; overflow: hidden; margin-bottom: 16px; }
+    .timer-fill { height: 100%; border-radius: 2px; background: #2563eb; transition: width 1s linear, background 0.3s; }
+
+    /* Dots */
+    .dots { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 16px; }
+    .dot { width: 9px; height: 9px; border-radius: 50%; background: #e5e3de; border: 1px solid #d4d0ca; }
+    .dot.current  { background: #2563eb; border-color: #2563eb; }
+    .dot.correct  { background: #16a34a; border-color: #16a34a; }
+    .dot.wrong    { background: #dc2626; border-color: #dc2626; }
+    .dot.skipped  { background: #ca8a04; border-color: #ca8a04; }
+
+    /* Explanation */
+    .explanation { background: #faf9f7; border: 1px solid #e5e3de; border-radius: 8px; padding: 12px 14px; font-size: 0.88rem; color: var(--muted); line-height: 1.6; margin-top: 14px; display: none; }
+    .explanation.visible { display: block; }
+
+    /* Visual box */
+    .visual-box { font-family: monospace; font-size: 1.5rem; letter-spacing: 6px; background: #f8f7f4; border: 1px solid var(--border); border-radius: 8px; padding: 1rem; text-align: center; margin-bottom: 14px; display: none; }
+
+    /* Buttons */
+    .btn { padding: 10px 22px; border-radius: 8px; border: 1px solid var(--border); background: transparent; cursor: pointer; font-size: 0.9rem; font-family: 'DM Sans', sans-serif; color: var(--text); transition: background 0.15s; }
+    .btn:hover { background: #f1ede8; }
+    .btn-primary { background: #1a1917; color: white; border-color: #1a1917; }
+    .btn-primary:hover { background: #3a3835; }
+    .btn-excel { background: #16a34a; color: white; border-color: #16a34a; }
+    .btn-excel:hover { background: #15803d; }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* Section label */
+    .section-label { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+
+    /* IQ display */
+    .iq-display { text-align: center; padding: 2rem 0 1.5rem; }
+    .iq-display .score-num { font-family: 'DM Serif Display', serif; font-size: clamp(4rem, 15vw, 6rem); line-height: 1; }
+    .iq-display .score-sub { font-size: 0.9rem; color: var(--muted); margin-top: 4px; }
+
+    /* Category bar */
+    .cat-bar-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+    .cat-bar-label { font-size: 0.82rem; color: var(--muted); width: 56px; flex-shrink: 0; }
+    .cat-bar-track { flex: 1; height: 7px; background: #f1ede8; border-radius: 4px; overflow: hidden; }
+    .cat-bar-fill { height: 100%; border-radius: 4px; transition: width 0.7s ease; }
+    .cat-bar-score { font-size: 0.82rem; color: var(--muted); width: 32px; text-align: right; }
+
+    /* IQ scale */
+    .iq-scale-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+    .iq-scale-row:last-child { border-bottom: none; }
+    .iq-scale-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .iq-scale-range { width: 56px; font-weight: 500; }
+    .iq-scale-label { color: var(--muted); flex: 1; }
+    .iq-scale-you { font-size: 0.72rem; font-weight: 600; background: #1a1917; color: white; padding: 2px 7px; border-radius: 99px; }
+
+    /* Screen */
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    /* Name screen */
+    .name-field { width: 100%; padding: 13px 16px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 1rem; font-family: 'DM Sans', sans-serif; color: var(--text); background: var(--surface); outline: none; transition: border-color 0.2s; }
+    .name-field:focus { border-color: #2563eb; }
+    .name-field.error { border-color: #dc2626; }
+    .error-msg { color: #dc2626; font-size: 0.82rem; margin-top: 6px; display: none; }
+    .error-msg.visible { display: block; }
+
+    /* Excel export box */
+    .export-box { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: var(--radius); padding: 1.25rem 1.5rem; margin-top: 1rem; }
+    .export-box .title { font-size: 0.85rem; font-weight: 600; color: #15803d; margin-bottom: 4px; }
+    .export-box p { font-size: 0.82rem; color: #166534; line-height: 1.5; }
+    .export-row { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+
+    /* Footer */
+    .footer { text-align: center; margin-top: 3rem; font-size: 0.78rem; color: #b8b4ae; }
+
+    /* Utils */
+    .flex { display: flex; }
+    .flex-between { display: flex; justify-content: space-between; align-items: center; }
+    .gap-2 { gap: 8px; }
+    .mt-1 { margin-top: 8px; }
+    .mt-2 { margin-top: 16px; }
+    .mt-3 { margin-top: 24px; }
+
+    @media (max-width: 480px) {
+      body { padding: 1rem 0.75rem 3rem; }
+      .card { padding: 1.1rem; }
+      .export-row { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header class="site-header">
+    <span class="logo" id="site-logo"></span>
+    <h1 id="site-name"></h1>
+    <p id="site-tagline"></p>
+  </header>
+
+  <!-- ======== SCREEN 0: Name Entry ======== -->
+  <div class="screen active" id="screen-name">
+    <div class="card" style="max-width: 440px; margin: 0 auto;">
+      <div style="text-align: center; margin-bottom: 1.5rem;">
+        <div style="font-size: 2rem; margin-bottom: 0.5rem;">👤</div>
+        <p style="font-size: 1rem; font-weight: 500; color: var(--text);">Before we begin</p>
+        <p style="font-size: 0.88rem; color: var(--muted); margin-top: 4px; line-height: 1.6;">
+          Please enter the candidate's name. This will appear on the results and in the Excel report.
+        </p>
+      </div>
+
+      <label style="font-size: 0.82rem; font-weight: 600; color: var(--muted); display: block; margin-bottom: 6px; letter-spacing: 0.04em; text-transform: uppercase;">
+        Full Name
+      </label>
+      <input
+        type="text"
+        id="candidate-name"
+        class="name-field"
+        placeholder="e.g. Ahmed Khan"
+        maxlength="60"
+        onkeydown="if(event.key==='Enter') confirmName()"
+        autocomplete="name"
+      />
+      <div class="error-msg" id="name-error">Please enter the candidate's name to continue.</div>
+
+      <div style="margin-top: 1.5rem; text-align: center;">
+        <button class="btn btn-primary" onclick="confirmName()" style="width: 100%; padding: 13px; font-size: 1rem;">
+          Continue to Test →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== SCREEN 1: Start ======== -->
+  <div class="screen" id="screen-start">
+    <div class="card" style="margin-bottom: 1rem; background: #1a1917; border-color: #1a1917;">
+      <p style="font-size: 0.82rem; color: #b8b4ae; margin-bottom: 2px;">Candidate</p>
+      <p id="start-candidate-name" style="font-size: 1.1rem; font-weight: 500; color: white; font-family: 'DM Serif Display', serif;"></p>
+    </div>
+    <div class="stats-grid" id="start-stats"></div>
+    <div class="card mt-2" id="start-categories">
+      <div class="section-label">Categories covered</div>
+      <div id="cat-list" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;"></div>
+    </div>
+    <div class="mt-3" style="text-align: center;">
+      <button class="btn btn-primary" onclick="startTest()" style="padding: 13px 48px; font-size: 1rem;">
+        Start Test →
+      </button>
+    </div>
+  </div>
+
+  <!-- ======== SCREEN 2: Test ======== -->
+  <div class="screen" id="screen-test">
+    <div class="flex-between" style="margin-bottom: 10px;">
+      <div class="flex gap-2" style="align-items: center;">
+        <span id="q-badge" class="badge"></span>
+        <span style="font-size: 0.85rem; color: var(--muted);">
+          Question <strong id="q-num">1</strong> of <span id="q-total"></span>
+        </span>
+      </div>
+      <span id="timer-label" style="font-size: 0.95rem; font-weight: 600;"></span>
+    </div>
+
+    <div class="timer-bar" id="timer-bar-wrap">
+      <div class="timer-fill" id="timer-fill" style="width: 100%;"></div>
+    </div>
+
+    <div class="dots" id="dots"></div>
+
+    <div class="card">
+      <div class="visual-box" id="q-visual"></div>
+      <p id="q-text" style="font-size: 1rem; line-height: 1.7; margin-bottom: 18px;"></p>
+      <div class="options" id="q-options"></div>
+      <div class="explanation" id="q-explanation"></div>
+    </div>
+
+    <div class="flex-between mt-2">
+      <button class="btn" onclick="skipQuestion()">Skip</button>
+      <button class="btn btn-primary" id="next-btn" onclick="nextQuestion()" disabled>Next →</button>
+    </div>
+  </div>
+
+  <!-- ======== SCREEN 3: Results ======== -->
+  <div class="screen" id="screen-result">
+
+    <!-- Name banner -->
+    <div class="card" style="margin-bottom: 10px; background: #1a1917; border-color: #1a1917; padding: 1rem 1.5rem;">
+      <div class="flex-between">
+        <div>
+          <p style="font-size: 0.75rem; color: #888480; margin-bottom: 2px;">Candidate</p>
+          <p id="result-candidate-name" style="font-size: 1.05rem; font-weight: 500; color: white; font-family: 'DM Serif Display', serif;"></p>
+        </div>
+        <div style="text-align: right;">
+          <p style="font-size: 0.75rem; color: #888480; margin-bottom: 2px;">Date</p>
+          <p id="result-date" style="font-size: 0.9rem; color: #d4d0ca;"></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="iq-display">
+        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;" id="result-emoji"></div>
+        <div class="score-num" id="iq-score"></div>
+        <div class="score-sub">Estimated IQ Score</div>
+        <div style="margin-top: 12px;">
+          <span class="badge" id="iq-label" style="font-size: 0.85rem; padding: 5px 14px;"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="stats-grid mt-2">
+      <div class="stat-card">
+        <div class="num" id="res-correct" style="color: #16a34a;"></div>
+        <div class="lbl">Correct</div>
+      </div>
+      <div class="stat-card">
+        <div class="num" id="res-wrong" style="color: #dc2626;"></div>
+        <div class="lbl">Incorrect</div>
+      </div>
+      <div class="stat-card">
+        <div class="num" id="res-skip" style="color: #ca8a04;"></div>
+        <div class="lbl">Skipped</div>
+      </div>
+      <div class="stat-card">
+        <div class="num" id="res-time"></div>
+        <div class="lbl">Avg. time</div>
+      </div>
+    </div>
+
+    <div class="card mt-2">
+      <div class="section-label">Performance by category</div>
+      <div id="cat-breakdown"></div>
+    </div>
+
+    <div class="card mt-2">
+      <div class="section-label">IQ scale reference</div>
+      <div id="iq-scale-ref"></div>
+    </div>
+
+    <!-- Excel Export Box -->
+    <div class="export-box">
+      <div class="title">📊 Export to Excel</div>
+      <p>
+        Copy this candidate's result row and paste it into the <strong>Results Log</strong> sheet
+        of the provided <strong>IQ_Results_Tracker.xlsx</strong> workbook.
+        The Summary Dashboard will update automatically.
+      </p>
+      <div class="export-row">
+        <button class="btn btn-excel" onclick="copyExcelRow()" id="copy-btn">
+          📋 Copy Result Row
+        </button>
+        <button class="btn" onclick="downloadCSV()">
+          ⬇ Download as CSV
+        </button>
+      </div>
+      <p id="copy-confirm" style="font-size: 0.8rem; color: #15803d; margin-top: 8px; display: none;">
+        ✅ Copied! Open IQ_Results_Tracker.xlsx → Results Log → paste into the next empty row.
+      </p>
+    </div>
+
+    <div class="mt-3" style="text-align: center; display: flex; gap: 10px; justify-content: center;">
+      <button class="btn" onclick="restartTest()">New Candidate</button>
+      <button class="btn btn-primary" onclick="shareResult()">Share Score</button>
+    </div>
+  </div>
+
+  <footer class="footer" id="site-footer"></footer>
+</div>
+
+<!-- =====================================================================
+     APP LOGIC
+     ===================================================================== -->
+<script>
+  // ── State ──────────────────────────────────────────────────────────────────
+  let candidateName = '';
+  let currentQ = 0;
+  let answers = [];
+  let qTimes  = [];
+  let timerInt = null;
+  let timeLeft = 0;
+  let qStart   = 0;
+  let hasAnswered = false;
+  let lastResults = null;   // stored for export
+
+  const LETTERS = ['A','B','C','D'];
+
+  // ── Boot ───────────────────────────────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', initUI);
+
+  function initUI() {
+    document.title = CONFIG.siteName;
+    document.getElementById('site-logo').textContent    = CONFIG.logoEmoji;
+    document.getElementById('site-name').textContent    = CONFIG.siteName;
+    document.getElementById('site-tagline').textContent = CONFIG.siteTagline;
+    document.getElementById('site-footer').textContent  = CONFIG.siteName + ' · ' + new Date().getFullYear();
+  }
+
+  // ── Screen 0: Name entry ───────────────────────────────────────────────────
+  function confirmName() {
+    const input = document.getElementById('candidate-name');
+    const err   = document.getElementById('name-error');
+    const val   = input.value.trim();
+
+    if (!val) {
+      input.classList.add('error');
+      err.classList.add('visible');
+      input.focus();
+      return;
+    }
+
+    input.classList.remove('error');
+    err.classList.remove('visible');
+    candidateName = val;
+
+    buildStartScreen();
+    show('screen-start');
+  }
+
+  // ── Screen 1: Start screen ─────────────────────────────────────────────────
+  function buildStartScreen() {
+    document.getElementById('start-candidate-name').textContent = candidateName;
+
+    const statsEl = document.getElementById('start-stats');
+    statsEl.innerHTML = '';
+    const cats  = [...new Set(CONFIG.questions.map(q => q.cat))];
+    const total = CONFIG.questions.length;
+
+    [
+      { n: total,   l: 'Questions' },
+      { n: CONFIG.timePerQuestion > 0 ? CONFIG.timePerQuestion + 's' : '∞', l: 'Per question' },
+      { n: cats.length, l: 'Categories' },
+      { n: 'IQ',    l: 'Score report' }
+    ].forEach(s => {
+      const d = document.createElement('div');
+      d.className = 'stat-card';
+      d.innerHTML = `<div class="num">${s.n}</div><div class="lbl">${s.l}</div>`;
+      statsEl.appendChild(d);
+    });
+
+    const catEl = document.getElementById('cat-list');
+    catEl.innerHTML = '';
+    cats.forEach(cat => {
+      const c = CATEGORIES[cat] || { bg: '#f8f7f4', text: '#6b6963' };
+      const d = document.createElement('div');
+      d.style.cssText = 'display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--muted);';
+      d.innerHTML = `<span class="badge" style="background:${c.bg};color:${c.text};">${cat}</span> ${cat} questions`;
+      catEl.appendChild(d);
+    });
+
+    document.getElementById('q-total').textContent = total;
+  }
+
+  // ── Start test ─────────────────────────────────────────────────────────────
+  function startTest() {
+    const n = CONFIG.questions.length;
+    answers = new Array(n).fill(null);
+    qTimes  = new Array(n).fill(0);
+    currentQ = 0;
+    show('screen-test');
+    renderQuestion();
+  }
+
+  // ── Render question ────────────────────────────────────────────────────────
+  function renderQuestion() {
+    const q = CONFIG.questions[currentQ];
+    hasAnswered = false;
+    document.getElementById('next-btn').disabled = true;
+
+    const cat  = CATEGORIES[q.cat] || { bg: '#f8f7f4', text: '#6b6963' };
+    const badge = document.getElementById('q-badge');
+    badge.textContent  = q.cat;
+    badge.style.background = cat.bg;
+    badge.style.color      = cat.text;
+
+    document.getElementById('q-num').textContent = currentQ + 1;
+
+    const vis = document.getElementById('q-visual');
+    if (q.visual) { vis.textContent = q.visual; vis.style.display = 'block'; }
+    else           { vis.style.display = 'none'; }
+
+    document.getElementById('q-text').textContent = q.text;
+
+    const optsEl = document.getElementById('q-options');
+    optsEl.innerHTML = '';
+    q.opts.forEach((opt, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'option';
+      btn.innerHTML = `<span class="letter">${LETTERS[i]}</span><span>${opt}</span>`;
+      btn.onclick = () => selectAnswer(i);
+      optsEl.appendChild(btn);
+    });
+
+    const expEl = document.getElementById('q-explanation');
+    expEl.className = 'explanation';
+    expEl.textContent = '';
+
+    clearInterval(timerInt);
+    const timerWrap = document.getElementById('timer-bar-wrap');
+    if (CONFIG.timePerQuestion > 0) {
+      timerWrap.style.display = 'block';
+      timeLeft = CONFIG.timePerQuestion;
+      updateTimerUI();
+      qStart = Date.now();
+      timerInt = setInterval(tick, 1000);
+    } else {
+      timerWrap.style.display = 'none';
+      document.getElementById('timer-label').textContent = '';
+      qStart = Date.now();
+    }
+
+    renderDots();
+  }
+
+  function tick() {
+    timeLeft--;
+    updateTimerUI();
+    if (timeLeft <= 0) {
+      clearInterval(timerInt);
+      if (!hasAnswered) {
+        answers[currentQ] = 'skip';
+        qTimes[currentQ]  = CONFIG.timePerQuestion;
+        revealAnswer(null);
+        document.getElementById('next-btn').disabled = false;
+      }
+    }
+  }
+
+  function updateTimerUI() {
+    document.getElementById('timer-label').textContent = timeLeft + 's';
+    const pct  = (timeLeft / CONFIG.timePerQuestion) * 100;
+    const fill = document.getElementById('timer-fill');
+    fill.style.width      = pct + '%';
+    fill.style.background = timeLeft <= 5 ? '#dc2626' : timeLeft <= 10 ? '#ca8a04' : '#2563eb';
+  }
+
+  function selectAnswer(idx) {
+    if (hasAnswered) return;
+    hasAnswered = true;
+    clearInterval(timerInt);
+    qTimes[currentQ] = Math.round((Date.now() - qStart) / 1000);
+    answers[currentQ] = idx;
+    revealAnswer(idx);
+    document.getElementById('next-btn').disabled = false;
+  }
+
+  function revealAnswer(chosen) {
+    const q    = CONFIG.questions[currentQ];
+    const opts = document.getElementById('q-options').querySelectorAll('.option');
+    opts.forEach((el, i) => {
+      el.disabled = true;
+      if (i === q.ans)                    el.classList.add('correct');
+      else if (i === chosen && i !== q.ans) el.classList.add('wrong');
+    });
+    if (CONFIG.showExplanations && q.exp) {
+      const expEl = document.getElementById('q-explanation');
+      expEl.textContent = (answers[currentQ] === 'skip' ? '⏰ Time\'s up! ' : '💡 ') + q.exp;
+      expEl.classList.add('visible');
+    }
+    renderDots();
+  }
+
+  function skipQuestion() {
+    if (hasAnswered) return;
+    clearInterval(timerInt);
+    answers[currentQ] = 'skip';
+    qTimes[currentQ]  = CONFIG.timePerQuestion;
+    revealAnswer(null);
+    document.getElementById('next-btn').disabled = false;
+  }
+
+  function nextQuestion() {
+    if (currentQ < CONFIG.questions.length - 1) { currentQ++; renderQuestion(); }
+    else showResults();
+  }
+
+  function renderDots() {
+    const el = document.getElementById('dots');
+    el.innerHTML = '';
+    CONFIG.questions.forEach((q, i) => {
+      const d = document.createElement('div');
+      d.className = 'dot';
+      if (i === currentQ) d.classList.add('current');
+      else if (answers[i] === 'skip' || answers[i] === null) { if (i < currentQ) d.classList.add('skipped'); }
+      else if (answers[i] === q.ans) d.classList.add('correct');
+      else d.classList.add('wrong');
+      el.appendChild(d);
+    });
+  }
+
+  // ── Results ────────────────────────────────────────────────────────────────
+  function showResults() {
+    clearInterval(timerInt);
+
+    let correct = 0, wrong = 0, skipped = 0;
+    const catStats = {};
+    CONFIG.questions.forEach(q => { catStats[q.cat] = { c: 0, t: 0 }; });
+
+    CONFIG.questions.forEach((q, i) => {
+      catStats[q.cat].t++;
+      if      (answers[i] === q.ans)                     { correct++; catStats[q.cat].c++; }
+      else if (answers[i] === 'skip' || answers[i] === null) skipped++;
+      else wrong++;
+    });
+
+    const pct  = correct / CONFIG.questions.length;
+    const band = CONFIG.iqBands.find(b => pct >= b.minPct) || CONFIG.iqBands[CONFIG.iqBands.length - 1];
+    const iq   = band.iq + Math.round(Math.random() * 4 - 2);
+    const now  = new Date();
+    const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    const timeStr = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+
+    // Store for export
+    lastResults = { candidateName, dateStr, timeStr, iq, band: band.label, catStats, correct, wrong, skipped, qTimes };
+
+    // UI updates
+    document.getElementById('result-candidate-name').textContent = candidateName;
+    document.getElementById('result-date').textContent = dateStr + '  ' + timeStr;
+    document.getElementById('result-emoji').textContent = band.emoji;
+    document.getElementById('iq-score').textContent    = iq;
+    document.getElementById('iq-score').style.color    = band.color;
+    const lbl = document.getElementById('iq-label');
+    lbl.textContent = band.label;
+    lbl.style.background = band.color + '18';
+    lbl.style.color      = band.color;
+
+    document.getElementById('res-correct').textContent = correct;
+    document.getElementById('res-wrong').textContent   = wrong;
+    document.getElementById('res-skip').textContent    = skipped;
+
+    const validT = qTimes.filter((t, i) => answers[i] !== 'skip' && answers[i] !== null && t > 0);
+    const avgT   = validT.length ? Math.round(validT.reduce((a,b) => a+b,0) / validT.length) : 0;
+    document.getElementById('res-time').textContent = avgT + 's';
+
+    // Category bars
+    const catEl = document.getElementById('cat-breakdown');
+    catEl.innerHTML = '';
+    Object.entries(catStats).forEach(([cat, s]) => {
+      const p = s.t > 0 ? Math.round((s.c / s.t) * 100) : 0;
+      const c = (CATEGORIES[cat] || {}).color || '#2563eb';
+      catEl.innerHTML += `
+        <div class="cat-bar-row">
+          <span class="cat-bar-label">${cat}</span>
+          <div class="cat-bar-track">
+            <div class="cat-bar-fill" style="width:${p}%;background:${c};"></div>
+          </div>
+          <span class="cat-bar-score">${s.c}/${s.t}</span>
+        </div>`;
+    });
+
+    // IQ scale
+    const scaleEl = document.getElementById('iq-scale-ref');
+    scaleEl.innerHTML = '';
+    const shown = new Set();
+    CONFIG.iqBands.forEach(b => {
+      if (shown.has(b.iq)) return;
+      shown.add(b.iq);
+      const isYou = b.iq === band.iq;
+      scaleEl.innerHTML += `
+        <div class="iq-scale-row">
+          <div class="iq-scale-dot" style="background:${b.color};"></div>
+          <span class="iq-scale-range">${b.iq}+</span>
+          <span class="iq-scale-label">${b.label}</span>
+          ${isYou ? '<span class="iq-scale-you">You</span>' : ''}
+        </div>`;
+    });
+
+    window._lastIQ    = iq;
+    window._lastLabel = band.label;
+
+    show('screen-result');
+    document.getElementById('copy-confirm').style.display = 'none';
+  }
+
+  // ── Excel Export Helpers ───────────────────────────────────────────────────
+  function buildRowData() {
+    if (!lastResults) return null;
+    const r = lastResults;
+    const cats = Object.keys(r.catStats);
+
+    // Headers match the Excel template columns exactly
+    const rowValues = [
+      '',                       // # (auto in Excel)
+      r.candidateName,
+      r.dateStr,
+      r.timeStr,
+      r._iq || window._lastIQ,
+      r.band,
+    ];
+
+    // Category scores as decimal fractions (Excel template uses % format)
+    cats.forEach(cat => {
+      const s = r.catStats[cat];
+      rowValues.push(s.t > 0 ? (s.c / s.t).toFixed(4) : 0);
+    });
+
+    rowValues.push(r.correct);                        // Total Correct
+    rowValues.push(CONFIG.questions.length);          // Total Qs
+
+    return { headers: ['#','Name','Date','Time','IQ Score','Band',...cats,'Total Correct','Total Qs'], values: rowValues };
+  }
+
+  function copyExcelRow() {
+    // Store IQ on lastResults (it's set on window)
+    if (lastResults) lastResults._iq = window._lastIQ;
+    const data = buildRowData();
+    if (!data) return;
+
+    // Tab-separated so it pastes cleanly into Excel
+    const row = data.values.map(v => String(v)).join('\t');
+    navigator.clipboard.writeText(row).then(() => {
+      document.getElementById('copy-confirm').style.display = 'block';
+      const btn = document.getElementById('copy-btn');
+      btn.textContent = '✅ Copied!';
+      setTimeout(() => { btn.textContent = '📋 Copy Result Row'; }, 3000);
+    }).catch(() => {
+      // Fallback: select a hidden textarea
+      fallbackCopy(row);
+    });
+  }
+
+  function fallbackCopy(text) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;opacity:0;';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    document.getElementById('copy-confirm').style.display = 'block';
+  }
+
+  function downloadCSV() {
+    if (lastResults) lastResults._iq = window._lastIQ;
+    const data = buildRowData();
+    if (!data) return;
+
+    const escapeCSV = v => {
+      const s = String(v);
+      return s.includes(',') || s.includes('"') || s.includes('\n') ? `"${s.replace(/"/g,'""')}"` : s;
+    };
+
+    const csvContent =
+      data.headers.map(escapeCSV).join(',') + '\n' +
+      data.values.map(escapeCSV).join(',');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = `IQ_Result_${candidateName.replace(/\s+/g,'_')}_${new Date().toISOString().slice(0,10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  // ── Share & Restart ────────────────────────────────────────────────────────
+  function shareResult() {
+    const text = `${candidateName} scored ${window._lastIQ} IQ (${window._lastLabel}) on the ${CONFIG.siteName}! 🧠`;
+    if (navigator.share) navigator.share({ title: CONFIG.siteName, text }).catch(() => {});
+    else navigator.clipboard.writeText(text).then(() => alert('Result copied to clipboard!'));
+  }
+
+  function restartTest() {
+    clearInterval(timerInt);
+    candidateName = '';
+    document.getElementById('candidate-name').value = '';
+    show('screen-name');
+  }
+
+  function show(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+</script>
+</body>
+</html>
